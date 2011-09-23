@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+
+begin
+  require 'rubygems'
+  require 'octokit'
+rescue Exception => e
+  puts 'Octokit gem must be installed. `gem install octokit`'
+end
+
+github_login = ENV['GITHUB_LOGIN']
+github_password = ENV['GITHUB_PASSWORD']
+
+if github_login.nil? || github_password.nil?
+  puts 'Please provide GITHUB_LOGIN and GITHUB_PASSWORD environment variables.'
+
+  exit
+end
+
+repo, base, head, title, body = ARGV[1], ARGV[2], ARGV[3], ARGV[4], ARGV[5]
+
+if ARGV.length < 5
+  puts 'Usage:'
+  puts '    git create-pull-request <repo> <base> <head> <title> <body>'
+
+  exit
+end
+
+client = Octokit::Client.new :login => github_login, :password => github_password
+
+begin
+  puts 'Creating a pull request...'
+  puts client.create_pull_request(repo, base, head, title, body).gsub("\n", "  \n")
+  puts "Pull request for #{repo} from #{head} into #{base} has been created."
+rescue Exception => e
+  puts 'An error has occurred:'
+  puts e.inspect.gsub("\n", "  \n")
+end
